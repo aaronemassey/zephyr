@@ -7,6 +7,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdbool.h>
 #define DT_DRV_COMPAT sbs_sbs_gauge_new_api
 
 #include "sbs_gauge.h"
@@ -66,6 +67,9 @@ static int sbs_gauge_get_prop(const struct device *dev, struct fuel_gauge_get_pr
 {
 	int rc = 0;
 	uint16_t val = 0;
+	#ifdef SBS_CUTOFF_SUPPORT
+	struct sbs_gauge_data *data = dev->data;
+	#endif
 
 	switch (prop->property_type) {
 	case FUEL_GAUGE_AVG_CURRENT:
@@ -164,6 +168,12 @@ static int sbs_gauge_get_prop(const struct device *dev, struct fuel_gauge_get_pr
 		rc = sbs_cmd_reg_read(dev, SBS_GAUGE_CMD_REM_TIME_ALARM, &val);
 		prop->value.sbs_remaining_time_alarm = val;
 		break;
+	#ifdef SBS_CUTOFF_SUPPORT
+	case FUEL_GAUGE_BATTERY_CUT_OFF:
+		prop->value.battery_cutoff = data->cutoff;
+		rc = 0;
+		break;
+	#endif /* SBS_CUTOFF_SUPPORT */
 	default:
 		rc = -ENOTSUP;
 	}
@@ -177,6 +187,9 @@ static int sbs_gauge_set_prop(const struct device *dev, struct fuel_gauge_set_pr
 {
 	int rc = 0;
 	uint16_t val = 0;
+	#ifdef SBS_CUTOFF_SUPPORT
+	struct sbs_gauge_data *data = dev->data;
+	#endif
 
 	switch (prop->property_type) {
 
@@ -202,6 +215,10 @@ static int sbs_gauge_set_prop(const struct device *dev, struct fuel_gauge_set_pr
 	case FUEL_GAUGE_SBS_ATRATE:
 		rc = sbs_cmd_reg_write(dev, SBS_GAUGE_CMD_AR, prop->value.sbs_at_rate);
 		prop->value.sbs_at_rate = val;
+		break;
+	case FUEL_GAUGE_BATTERY_CUT_OFF:
+		// FIXME do something rc = sbs_cmd_reg_write(dev, SBS_GAUGE_CMD_AR, prop->value.sbs_at_rate);
+		data->cutoff = true;
 		break;
 
 	default:
@@ -312,12 +329,13 @@ static const struct fuel_gauge_driver_api sbs_gauge_driver_api = {
 /* FIXME: fix init priority */
 #define SBS_GAUGE_INIT(index)                                                                      \
                                                                                                    \
+	static struct sbs_gauge_data sbs_gauge_data_##index = {};                                  \
 	static const struct sbs_gauge_config sbs_gauge_config_##index = {                          \
 		.i2c = I2C_DT_SPEC_INST_GET(index),                                                \
 	};                                                                                         \
                                                                                                    \
-	DEVICE_DT_INST_DEFINE(index, &sbs_gauge_init, NULL, NULL, &sbs_gauge_config_##index,       \
-			      POST_KERNEL, CONFIG_FUEL_GAUGE_INIT_PRIORITY,                        \
-			      &sbs_gauge_driver_api);
+	DEVICE_DT_INST_DEFINE(index, &sbs_gauge_init, NULL, &sbs_gauge_data_##index,               \
+			      &sbs_gauge_config_##index, POST_KERNEL,                              \
+			      CONFIG_FUEL_GAUGE_INIT_PRIORITY, &sbs_gauge_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(SBS_GAUGE_INIT)

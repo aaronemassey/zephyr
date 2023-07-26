@@ -7,6 +7,7 @@
 #ifndef ZEPHYR_DRIVERS_SENSOR_SBS_GAUGE_H_
 #define ZEPHYR_DRIVERS_SENSOR_SBS_GAUGE_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/drivers/i2c.h>
 
@@ -49,6 +50,20 @@
 
 struct sbs_gauge_config {
 	struct i2c_dt_spec i2c;
+};
+
+#define _SBS_INST_CUTOFF_SUPPORTED(inst) DT_INST_PROP_OR(inst, battery_cutoff_support, false)
+
+#define SBS_CUTOFF_SUPPORT (false || DT_INST_FOREACH_STATUS_OKAY(_SBS_INST_CUTOFF_SUPPORTED))
+
+struct sbs_gauge_data {
+#ifdef SBS_CUTOFF_SUPPORT
+	/*
+	 * Some SBS compliant gauges wakeup from shipping mode if we interact with them. For that
+	 * reason, locally save cutoff state within the driver.
+	 */
+	bool cutoff;
+#endif /* SBS_CUTOFF_SUPPORT */
 };
 
 #endif

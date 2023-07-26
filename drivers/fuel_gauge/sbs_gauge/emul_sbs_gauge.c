@@ -7,6 +7,8 @@
  * Emulator for SBS 1.1 compliant smart battery fuel gauge.
  */
 
+#include <stdint.h>
+#include <stdio.h>
 #ifdef CONFIG_FUEL_GAUGE
 #define DT_DRV_COMPAT sbs_sbs_gauge_new_api
 #else
@@ -16,7 +18,10 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sbs_sbs_gauge);
 
+#include <stdbool.h>
+#include <asm-generic/errno-base.h>
 #include <zephyr/device.h>
+#include <zephyr/devicetree.h>
 #include <zephyr/drivers/emul.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/drivers/i2c_emul.h>
@@ -39,6 +44,10 @@ struct sbs_gauge_emul_data {
 		uint32_t uV;
 		/* Battery terminal current - Pos is charging, Neg is discharging */
 		int uA;
+		/* Whether the battery cutoff or not */
+		bool is_cutoff;
+		/* Counts the number of times the cutoff payload has been sent to the designated register */
+		uint8_t cutoff_writes;
 	} batt_state;
 };
 
@@ -46,11 +55,17 @@ struct sbs_gauge_emul_data {
 struct sbs_gauge_emul_cfg {
 	/** I2C address of emulator */
 	uint16_t addr;
+	/** Per-emulator values of zephyr,battery_cutoff.yaml properties */
+	bool cutoff_support;
+	uint32_t cutoff_reg_addr;
+	uint32_t *cutoff_payload;
+	size_t cutoff_payload_size;
 };
 
 static int emul_sbs_gauge_reg_write(const struct emul *target, int reg, int val)
 {
 	struct sbs_gauge_emul_data *data = target->data;
+	const struct sbs_gauge_emul_cfg *cfg = target->cfg;
 
 	LOG_INF("write %x = %x", reg, val);
 	switch (reg) {
@@ -72,6 +87,11 @@ static int emul_sbs_gauge_reg_write(const struct emul *target, int reg, int val)
 	default:
 		LOG_INF("Unknown write %x", reg);
 		return -EIO;
+	}
+
+	/* Check if this is a cutoff write */
+	if (cfg->cutoff_support && reg == cfg->addr) {
+		printf("attempting to do cutoff\n");
 	}
 
 	return 0;
@@ -245,8 +265,21 @@ static int emul_sbs_fuel_gauge_set_battery_charging(const struct emul *target, u
 	return 0;
 }
 
+static int emul_sbs_fuel_gauge_is_battery_cutoff(const struct emul *target, bool *cutoff)
+{
+	struct sbs_gauge_emul_data *data = target->data;
+
+
+	__ASSERT_NO_MSG(cutoff != NULL);
+
+	*cutoff = data->batt_state.is_cutoff;
+
+	return 0;
+}
+
 static const struct fuel_gauge_emul_driver_api sbs_gauge_backend_api = {
 	.set_battery_charging = emul_sbs_fuel_gauge_set_battery_charging,
+	.is_battery_cutoff = emul_sbs_fuel_gauge_is_battery_cutoff,
 };
 
 static const struct i2c_emul_api sbs_gauge_emul_api_i2c = {
@@ -299,10 +332,16 @@ static int emul_sbs_sbs_gauge_init(const struct emul *target, const struct devic
 /*
  * Main instantiation macro. SBS Gauge Emulator only implemented for I2C
  */
+#define EMUL_SBS_GAUGE_PAYLOAD(inst)((uint32_t[])DT_INST_PROP_OR(n, battery_cutoff_payload, {}))
+
 #define SBS_GAUGE_EMUL(n)                                                                          \
 	static struct sbs_gauge_emul_data sbs_gauge_emul_data_##n;                                 \
 	static const struct sbs_gauge_emul_cfg sbs_gauge_emul_cfg_##n = {                          \
 		.addr = DT_INST_REG_ADDR(n),                                                       \
+		.cutoff_support = DT_INST_PROP_OR(n, battery_cutoff_support, 0),                   \
+		.cutoff_reg_addr = DT_INST_PROP_OR(n, battery_cutoff_reg_addr, 0),                 \
+		.cutoff_payload = EMUL_SBS_GAUGE_PAYLOAD(n),                                       \
+		.cutoff_payload_size = sizeof(EMUL_SBS_GAUGE_PAYLOAD(n)),                          \
 	};                                                                                         \
 	EMUL_DT_INST_DEFINE(n, emul_sbs_sbs_gauge_init, &sbs_gauge_emul_data_##n,                  \
 			    &sbs_gauge_emul_cfg_##n, &sbs_gauge_emul_api_i2c,                      \

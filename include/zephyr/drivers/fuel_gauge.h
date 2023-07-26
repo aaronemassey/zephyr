@@ -38,6 +38,8 @@ enum fuel_gauge_property {
 	 */
 	FUEL_GAUGE_AVG_CURRENT = 0,
 
+	/** Whether the battery has been cutoff from the system */
+	FUEL_GAUGE_BATTERY_CUT_OFF,
 	/** Battery current (uA); negative=discharging */
 	FUEL_GAUGE_CURRENT,
 	/** Whether the battery underlying the fuel-gauge is cut off from charge */
@@ -129,6 +131,8 @@ struct fuel_gauge_get_property {
 		/* Dynamic Battery Info */
 		/** FUEL_GAUGE_AVG_CURRENT */
 		int avg_current;
+		/** FUEL_GAUGE_BATTERY_CUT_OFF */
+		bool battery_cutoff;
 		/** FUEL_GAUGE_CHARGE_CUTOFF */
 		bool cutoff;
 		/** FUEL_GAUGE_CURRENT */
@@ -196,6 +200,8 @@ struct fuel_gauge_set_property {
 		/* type property_field; */
 
 		/* Writable Dynamic Battery Info */
+		/** FUEL_GAUGE_BATTERY_CUT_OFF */
+		bool battery_cutoff;
 		/** FUEL_GAUGE_SBS_MFR_ACCESS */
 		uint16_t sbs_mfr_access_word;
 		/** FUEL_GAUGE_SBS_REMAINING_CAPACITY_ALARM */
