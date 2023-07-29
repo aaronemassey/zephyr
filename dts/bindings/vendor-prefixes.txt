@@ -331,6 +331,7 @@ lego	LEGO Systems A/S
 lemaker	Shenzhen LeMaker Technology Co., Ltd.
 lenovo	Lenovo Group Ltd.
 lg	LG Corporation
+lgc	LGC Corporation
 lgphilips	LG Display
 libretech	Shenzhen Libre Technology Co., Ltd
 licheepi	Lichee Pi

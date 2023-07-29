@@ -25,4 +25,11 @@
 		reg = <0x0C>;
 		status = "okay";
 	};
+
+	// TODO: Uncomment this when supporting generic tests.
+	/* smartbattery1: smartbattery@c { */
+	/* 	compatible = "lgc,ap19b8m"; */
+	/* 	reg = <0x0C>; */
+	/* 	status = "okay"; */
+	/* }; */
 };
