@@ -1,0 +1,18 @@
+#
+# Copyright 2023 Google LLC
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+include: ["sbs,sbs-gauge-new-api.yaml"]
+
+compatible: "lgc,ap19b8m"
+
+properties:
+  # Battery cutoff properties.
+  battery_cutoff_support:
+    default: 1
+  cutoff_reg_addr:
+    default: 0x3A
+  cutoff_payload:
+    default: [0xC574, 0xC574]
