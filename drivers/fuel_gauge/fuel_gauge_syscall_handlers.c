@@ -6,7 +6,7 @@
  */
 
 #include <zephyr/syscall_handler.h>
-#include <zephyr/drivers/fuel_gauge.h>
+#include <zephyr/drivers/fuel_gauge/fuel_gauge.h>
 
 static inline int z_vrfy_fuel_gauge_get_prop(const struct device *dev,
 					     struct fuel_gauge_get_property *props,

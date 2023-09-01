@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/device.h>
-#include <zephyr/drivers/fuel_gauge.h>
+#include <zephyr/drivers/fuel_gauge/fuel_gauge.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/byteorder.h>

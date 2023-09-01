@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 #include <zephyr/drivers/emul.h>
-#include <zephyr/drivers/fuel_gauge.h>
+#include <zephyr/drivers/fuel_gauge/fuel_gauge.h>
 
 #ifdef __cplusplus
 extern "C" {

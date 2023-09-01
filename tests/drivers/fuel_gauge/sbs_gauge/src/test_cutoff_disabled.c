@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 #include <zephyr/device.h>
-#include <zephyr/drivers/fuel_gauge.h>
+#include <zephyr/drivers/fuel_gauge/fuel_gauge.h>
 #include <zephyr/drivers/emul_fuel_gauge.h>
 #include <zephyr/ztest.h>
 #include <zephyr/ztest_assert.h>

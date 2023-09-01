@@ -10,7 +10,7 @@
 
 #include "max17048.h"
 
-#include <zephyr/drivers/fuel_gauge.h>
+#include <zephyr/drivers/fuel_gauge/fuel_gauge.h>
 #include <zephyr/kernel.h>
 #include <zephyr/init.h>
 #include <zephyr/drivers/gpio.h>

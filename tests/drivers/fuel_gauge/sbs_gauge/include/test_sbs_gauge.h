@@ -5,7 +5,7 @@
  */
 
 #include <zephyr/device.h>
-#include <zephyr/drivers/fuel_gauge.h>
+#include <zephyr/drivers/fuel_gauge/fuel_gauge.h>
 
 struct sbs_gauge_new_api_fixture {
 	const struct device *dev;
