@@ -8,6 +8,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/emul.h>
 #include <zephyr/drivers/emul_fuel_gauge.h>
+#include <zephyr/drivers/fuel_gauge_sbs.h>
 #include <zephyr/drivers/fuel_gauge.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/logging/log.h>
@@ -82,7 +83,7 @@ ZTEST_USER_F(sbs_gauge_new_api, test_set_some_props_failed_returns_err)
 		{0},
 		/* Valid property */
 		/* Set Manufacturer's Access to arbitrary word */
-		{.sbs_mfr_access_word = 1},
+		{.smbus_word = 1},
 	};
 
 	int ret = fuel_gauge_set_props(fixture->dev, prop_types, props, ARRAY_SIZE(props));
@@ -104,19 +105,19 @@ ZTEST_USER_F(sbs_gauge_new_api, test_set_prop_can_be_get)
 
 	union fuel_gauge_prop_val set_props[] = {
 		{
-			.sbs_mfr_access_word = word,
+			.smbus_word = word,
 		},
 		{
-			.sbs_remaining_capacity_alarm = word,
+			.smbus_word = word,
 		},
 		{
-			.sbs_remaining_time_alarm = word,
+			.smbus_word = word,
 		},
 		{
-			.sbs_mode = word,
+			.smbus_word = word,
 		},
 		{
-			.sbs_at_rate = (int16_t)word,
+			.smbus_word = (int16_t)word,
 		},
 	};
 
@@ -128,11 +129,11 @@ ZTEST_USER_F(sbs_gauge_new_api, test_set_prop_can_be_get)
 	zassert_ok(
 		fuel_gauge_get_props(fixture->dev, prop_types, get_props, ARRAY_SIZE(get_props)));
 
-	zassert_equal(get_props[0].sbs_mfr_access_word, word);
-	zassert_equal(get_props[1].sbs_remaining_capacity_alarm, word);
-	zassert_equal(get_props[2].sbs_remaining_time_alarm, word);
-	zassert_equal(get_props[3].sbs_mode, word);
-	zassert_equal(get_props[4].sbs_at_rate, (int16_t)word);
+	zassert_equal(get_props[0].smbus_word, word);
+	zassert_equal(get_props[1].smbus_word, word);
+	zassert_equal(get_props[2].smbus_word, word);
+	zassert_equal(get_props[3].smbus_word, word);
+	zassert_equal(get_props[4].smbus_word, (int16_t)word);
 }
 
 ZTEST_USER_F(sbs_gauge_new_api, test_get_props__returns_ok)
@@ -225,13 +226,13 @@ ZTEST_USER_F(sbs_gauge_new_api, test_set_get_single_prop)
 	uint16_t test_value = 0x1001;
 
 	union fuel_gauge_prop_val mfr_acc_set = {
-		.sbs_mfr_access_word = test_value,
+		.smbus_word = test_value,
 	};
 	union fuel_gauge_prop_val mfr_acc_get;
 
 	zassert_ok(fuel_gauge_set_prop(fixture->dev, FUEL_GAUGE_SBS_MFR_ACCESS, mfr_acc_set));
 	zassert_ok(fuel_gauge_get_prop(fixture->dev, FUEL_GAUGE_SBS_MFR_ACCESS, &mfr_acc_get));
-	zassert_equal(mfr_acc_get.sbs_mfr_access_word, test_value);
+	zassert_equal(mfr_acc_get.smbus_word, test_value);
 }
 
 ZTEST_SUITE(sbs_gauge_new_api, NULL, sbs_gauge_new_api_setup, NULL, NULL, NULL);
